@@ -1,52 +1,56 @@
-# app.py
 import streamlit as st
-import json
-from model import OpportunityMatcher
+from model import load_opportunities, compute_opportunity_embeddings, rank_opportunities
 
-st.set_page_config(page_title="AI Opportunity Matcher", layout="wide")
+st.set_page_config(page_title="OpporTutor", layout="wide")
 
-matcher = OpportunityMatcher()
+st.title("🎯 OpporTutor – AI Opportunity Finder for Students")
+st.write("Discover scholarships, internships, and programs tailored to your profile.")
 
-st.title("✨ AI-Powered Opportunity Matcher")
-st.write("Enter your skills/interests and get the best internship or project matches!")
+# Sidebar – User Profile
+st.sidebar.header("Your Profile")
 
-# --- User input ---
-user_profile = st.text_area("Describe your profile (skills, interests, goals):", height=150)
+name = st.sidebar.text_input("Name")
+branch = st.sidebar.text_input("Branch / Major")
+year = st.sidebar.selectbox("Year of Study", [1, 2, 3, 4])
+interests = st.sidebar.text_area("Your interests (ML, dev, research, etc.)")
+goals = st.sidebar.text_area("Describe your goals in 2–3 lines")
 
-# --- Load opportunities ---
-opportunities = matcher.load_opportunities()
+location_pref = st.sidebar.selectbox(
+    "Preferred Location", ["remote", "onsite", "hybrid", "no preference"]
+)
 
-if st.button("Find Matches"):
-    if not user_profile.strip():
-        st.warning("Please write about your skills or interests.")
-    elif len(opportunities) == 0:
-        st.error("No opportunities found. Add data to data/opportunities.json")
-    else:
-        results = matcher.match(user_profile, opportunities, top_k=5)
+needs_stipend = st.sidebar.checkbox("I need only stipend-based opportunities")
+is_female = st.sidebar.checkbox("Female")
+low_income = st.sidebar.checkbox("Low-income / financial need")
 
-        st.subheader("🔍 Top Matches")
-        for opp, score in results:
-            st.markdown(f"### {opp['title']}")
-            st.markdown(f"**Score:** {round(float(score), 3)}")
-            st.markdown(opp["description"])
-            st.markdown("---")
+if st.sidebar.button("Find Opportunities"):
+    profile = {
+        "name": name,
+        "branch": branch,
+        "year": year,
+        "interests": interests,
+        "goals": goals,
+        "location_pref": location_pref,
+        "needs_stipend": needs_stipend,
+        "is_female": is_female,
+        "low_income": low_income,
+    }
 
-# --- Add New Opportunity ---
-st.sidebar.header("➕ Add New Opportunity")
+    opps = load_opportunities()
+    opps = compute_opportunity_embeddings(opps)
+    ranked = rank_opportunities(profile, opps)
 
-title = st.sidebar.text_input("Title")
-description = st.sidebar.text_area("Description")
+    st.subheader("🔥 Recommended for You")
 
-if st.sidebar.button("Add"):
-    if not title or not description:
-        st.sidebar.warning("Fill both title and description.")
-    else:
-        new_opp = {"title": title, "description": description}
+    for opp, score in ranked[:10]:
+        with st.container():
+            st.markdown(f"### {opp['title']}  \n**{opp['organization']}**")
+            st.write(opp['description'])
+            st.write(f"**Score:** {score:.3f}")
 
-        with open("data/opportunities.json", "r+") as f:
-            data = json.load(f)
-            data.append(new_opp)
-            f.seek(0)
-            json.dump(data, f, indent=4)
+            cols = st.columns(3)
+            cols[0].markdown(f"🔗 [Apply Here]({opp['link']})")
+            cols[1].write(f"📍 {opp['location']}")
+            cols[2].write(f"🗓 Deadline: {opp['deadline']}")
 
-        st.sidebar.success("Added successfully!")
+            st.divider()

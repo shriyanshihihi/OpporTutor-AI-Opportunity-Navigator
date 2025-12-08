@@ -1,34 +1,41 @@
-# model.py
-from sentence_transformers import SentenceTransformer
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
 import json
+import numpy as np
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from utils.scoring import total_score
 
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
-class OpportunityMatcher:
-    def __init__(self):
-        self.model = SentenceTransformer(MODEL_NAME)
 
-    def encode(self, text):
-        return self.model.encode([text])[0]
+def load_opportunities():
+    with open("data/opportunities.json", "r") as f:
+        return json.load(f)
 
-    def load_opportunities(self, path="data/opportunities.json"):
-        with open(path, "r") as f:
-            return json.load(f)
 
-    def match(self, user_profile, opportunities, top_k=5):
-        user_vec = self.encode(user_profile)
+def embed_text(text):
+    return model.encode([text])[0]
 
-        opp_texts = [opp["description"] for opp in opportunities]
-        opp_vecs = self.model.encode(opp_texts)
 
-        scores = cosine_similarity([user_vec], opp_vecs)[0]
-
-        ranked = sorted(
-            list(zip(opportunities, scores)),
-            key=lambda x: x[1],
-            reverse=True
+def compute_opportunity_embeddings(opportunities):
+    for opp in opportunities:
+        opp["embedding"] = embed_text(
+            opp["title"] + " " + opp["description"] + " " + " ".join(opp["tags"])
         )
+    return opportunities
 
-        return ranked[:top_k]
+
+def rank_opportunities(profile, opportunities):
+    profile_text = f"{profile['interests']} {profile['goals']} {profile['branch']}"
+    profile_vec = embed_text(profile_text)
+
+    ranked = []
+
+    for opp in opportunities:
+        base_sim = cosine_similarity([profile_vec], [opp["embedding"]])[0][0]
+
+        score_val = total_score(base_sim, opp, profile)
+
+        ranked.append((opp, float(score_val)))
+
+    ranked.sort(key=lambda x: x[1], reverse=True)
+    return ranked
