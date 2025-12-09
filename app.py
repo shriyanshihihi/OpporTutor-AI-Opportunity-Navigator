@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from model import load_opportunities, compute_opportunity_embeddings, rank_opportunities
 
 st.set_page_config(page_title="OpporTutor – AI Opportunity Navigator", layout="wide")
@@ -14,7 +15,7 @@ if "shortlist" not in st.session_state:
 # HEADER
 # --------------------------
 st.title("🎯 OpporTutor – AI Opportunity Navigator")
-st.caption("AI-powered personalized opportunity discovery for students worldwide.")
+st.caption("AI-powered personalised opportunity discovery for students worldwide.")
 st.markdown("---")
 
 
@@ -53,12 +54,10 @@ submit = st.sidebar.button("Find Opportunities")
 # --------------------------
 if submit:
 
-    # Empty fields handling
     if not interests or not goals:
         st.warning("⚠️ Please fill in both interests and goals to get accurate recommendations.")
         st.stop()
 
-    # Build profile dictionary
     profile = {
         "name": name,
         "country": country,
@@ -75,14 +74,10 @@ if submit:
         "opportunity_filter": opportunity_filter,
     }
 
-    # Load + rank opportunities
     opps = load_opportunities()
     opps = compute_opportunity_embeddings(opps)
     ranked = rank_opportunities(profile, opps)
 
-    # ----------------------
-    # TABS
-    # ----------------------
     tab1, tab2 = st.tabs(["📌 Recommendations", "⭐ My Shortlist"])
 
     # ======================================================================
@@ -91,98 +86,104 @@ if submit:
     with tab1:
         st.subheader("🔥 Recommended Opportunities for You")
 
-        for opp, score in ranked[:15]:
+        for opp, score in ranked[:20]:
 
-            # FILTERING LOGIC
             if opp["type"] not in profile["opportunity_filter"]:
                 continue
 
-            # -------------------
-            # OPPORTUNITY CARD UI
-            # -------------------
-            st.markdown(
-                f"""
-                <div style="
-                    border-radius: 12px;
-                    padding: 16px;
-                    margin-bottom: 15px;
-                    background-color: #f9f9f9;
-                    border: 1px solid #e6e6e6;
-                ">
-                    <h3 style="margin: 0;">{opp['title']}</h3>
-                    <p style="margin: 0;"><strong>{opp['organization']}</strong></p>
-                    <p>{opp['description']}</p>
+            # ------------------------------------------
+            # FULL HTML CARD (SAFE IN DARK MODE)
+            # ------------------------------------------
+            card_html = f"""
+<div style="
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+    background-color: #ffffff;
+    border: 1px solid #e6e6e6;
+">
+    <h3 style="margin: 0; color: #222;">{opp['title']}</h3>
+    <p style="margin: 0; font-weight: bold; color: #444;">{opp['organization']}</p>
+    <p style="color: #444;">{opp['description']}</p>
 
-                    <div style="margin-bottom: 8px;">
-                        <span style="
-                            background: #e0ffe0;
-                            padding: 4px 10px;
-                            border-radius: 6px;
-                            margin-right: 6px;
-                            font-size: 12px;
-                        ">📍 {opp['location'].capitalize()}</span>
+    <div style="margin-bottom: 8px;">
+        <span style="
+            background: #e0ffe0;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-right: 6px;
+            font-size: 12px;
+        ">📍 {opp['location'].capitalize()}</span>
 
-                        <span style="
-                            background: #e0f0ff;
-                            padding: 4px 10px;
-                            border-radius: 6px;
-                            margin-right: 6px;
-                            font-size: 12px;
-                        ">🗓 Deadline: {opp['deadline']}</span>
+        <span style="
+            background: #e0f0ff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-right: 6px;
+            font-size: 12px;
+        ">🗓 {opp['deadline']}</span>
 
-                        <span style="
-                            background: #fff0e6;
-                            padding: 4px 10px;
-                            border-radius: 6px;
-                            margin-right: 6px;
-                            font-size: 12px;
-                        ">⭐ Score: {score:.3f}</span>
-                    </div>
-                """,
-                unsafe_allow_html=True,
-            )
+        <span style="
+            background: #fff0e6;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-right: 6px;
+            font-size: 12px;
+        ">⭐ {score:.3f}</span>
+    </div>
+</div>
+"""
+            components.html(card_html, height=260, scrolling=False)
 
-            # --------------------------
+            # ------------------------------------------
             # BADGES
-            # --------------------------
-            badge_html = ""
+            # ------------------------------------------
+            badge_html = "<div>"
 
             if "women" in opp["inclusive_flags"]:
                 badge_html += """<span style="background:#ffe6f2;padding:4px 10px;border-radius:6px;
-                                    margin-right:6px;font-size:12px;">👩 Women-Only</span>"""
+                margin-right:6px;font-size:12px;">👩 Women-Only</span>"""
 
             if "low-income" in opp["inclusive_flags"]:
                 badge_html += """<span style="background:#fff4cc;padding:4px 10px;border-radius:6px;
-                                    margin-right:6px;font-size:12px;">💰 Low-Income Support</span>"""
+                margin-right:6px;font-size:12px;">💰 Low-Income Support</span>"""
 
             if opp["stipend"]:
                 badge_html += """<span style="background:#e6ffe6;padding:4px 10px;border-radius:6px;
-                                    margin-right:6px;font-size:12px;">💵 Stipend Available</span>"""
+                margin-right:6px;font-size:12px;">💵 Stipend</span>"""
 
-            st.markdown(
-                f"<div style='margin-top:-10px;margin-bottom:10px;'>{badge_html}</div>",
-                unsafe_allow_html=True,
-            )
+            badge_html += "</div>"
 
-            # --------------------------
+            components.html(badge_html, height=50, scrolling=False)
+
+            # ------------------------------------------
             # APPLY BUTTON
-            # --------------------------
-            st.markdown(
-                f"<a href='{opp['link']}' target='_blank'>"
-                "<button style='padding:8px 15px;border:none;border-radius:8px;background:#4CAF50;color:white;'>"
-                "Apply Now 🔗</button></a>",
-                unsafe_allow_html=True,
-            )
+            # ------------------------------------------
+            apply_btn = f"""
+<div>
+<a href="{opp['link']}" target="_blank">
+<button style="
+    padding: 8px 15px;
+    border: none;
+    border-radius: 8px;
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+">Apply Now 🔗</button>
+</a>
+</div>
+"""
+            components.html(apply_btn, height=70)
 
-            # --------------------------
+            # ------------------------------------------
             # SAVE BUTTON
-            # --------------------------
+            # ------------------------------------------
             if st.button(f"⭐ Save {opp['id']}", key=f"save_{opp['id']}"):
                 if opp not in st.session_state["shortlist"]:
                     st.session_state["shortlist"].append(opp)
-                    st.success("Saved to shortlist!")
+                    st.success("Saved!")
 
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("")
 
     # ======================================================================
     # TAB 2 — SHORTLIST
@@ -190,8 +191,8 @@ if submit:
     with tab2:
         st.header("⭐ Your Saved Opportunities")
 
-        if len(st.session_state["shortlist"]) == 0:
-            st.info("No items saved yet. Save opportunities from the Recommendations tab.")
+        if not st.session_state["shortlist"]:
+            st.info("No items saved yet.")
         else:
             for opp in st.session_state["shortlist"]:
                 st.subheader(opp["title"])

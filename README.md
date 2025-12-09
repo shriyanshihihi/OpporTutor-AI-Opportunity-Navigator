@@ -1,47 +1,124 @@
-# OpporTutor – AI Opportunity Navigator for Students 🎯
+# 🎯 OpporTutor – AI-Powered Opportunity Navigator  
+### Personalized internship, scholarship, fellowship & research recommendations for students worldwide.
 
-**OpporTutor** is a web-app that helps students discover scholarships, internships, fellowships and programs tailored to their profile (branch, year, interests, financial need, inclusive-status, location preference).  
-It uses AI-based embedding + similarity matching 👇 to rank opportunities — making it easier for students (especially from underrepresented / non-traditional backgrounds) to find relevant opportunities without endless manual search.
+OpporTutor is an AI-driven platform that helps students discover **relevant, high-quality opportunities** based on their academic background, interests, goals, location preferences, and diversity attributes.  
 
----
-
-## 🧠 Motivation & Problem
-
-- Many students — especially from small towns or tier-2/3 colleges — miss great opportunities simply because they don’t know where to look or the information is scattered.  
-- OpporTutor aims to **democratize access to opportunities** by providing a simple, inclusive, and personalized navigator.  
-- By combining natural-language profile description with AI-matching, OpporTutor turns a long manual search into a 1-click “recommendations feed”.
+Built for **BatchHacks**, this project focuses on **accessibility, fairness, and real-world impact** by reducing information inequality among students.
 
 ---
 
-## 🚀 Features
+## 🚀 Problem Statement  
+Students—especially from non–Tier 1 colleges—miss out on life-changing opportunities because:
 
-- Submit your profile: branch, year, interests/goals, stipend-need, gender / low-income / inclusive flags, location preference (remote/onsite/hybrid)  
-- AI-based matching: finds and ranks relevant opportunities using sentence-embeddings + custom scoring  
-- Results show: opportunity title, org, short description, location, deadline, link to apply  
-- Supports: internships, fellowships, scholarships, research programs, training schools  
-- Inclusive-badges: shows when an opportunity targets women, low-income students, or underrepresented groups (social-good focus)  
-- Easy to run locally (Streamlit) — no heavy infra needed  
+- Information is scattered across hundreds of websites  
+- Most platforms show generic results, not personalized ones  
+- Diversity-based opportunities (women, low-income, PWD) often go unnoticed  
+- Beginners don’t know which opportunities match their profile
 
----
-
-## 📦 Tech Stack
-
-- **Backend / ML**: Python, `sentence-transformers` (all-MiniLM-L6-v2), `scikit-learn` / NumPy for similarity & scoring  
-- **Frontend / UI**: Streamlit (single-page, forms + results feed)  
-- **Data**: JSON file (`data/opportunities.json`) containing opportunity metadata + description + eligibility + tags  
-- **Repository**: Clean, modular — `app.py`, `model.py`, `data/`, `requirements.txt`  
+🎓 **OpporTutor solves this using AI-powered recommendation matching.**
 
 ---
 
-## 🛠️ Installation & Running Locally (Quick Start)
+## 💡 Project Features  
+### 🔍 1. **AI Matching Engine**
+Uses **sentence-transformer embeddings** + custom scoring rules to match student profiles with opportunity descriptions:
 
+- Cosine similarity on embeddings  
+- Bonus scoring for:  
+  ✔ Academic year match  
+  ✔ Location preference  
+  ✔ Stipend requirement  
+  ✔ Women-in-tech / low-income / PWD inclusivity  
+  ✔ Opportunity type filters  
+
+### 🧭 2. **Rich Dataset (40 curated entries)**
+Includes diverse opportunities:
+- Internships  
+- Fellowships  
+- Scholarships  
+- Research programs  
+- Women-only, low-income, PWD inclusive options  
+- India + Global mix  
+
+### 🖥️ 3. **Interactive Streamlit App**
+- Profile form (branch, year, interests, goals, filters, stipend, gender, income status)  
+- Top-N personalized recommendations  
+- Clean, card-style UI with badges (Women-only, Stipend, Low-income, etc.)  
+- Shortlist & save opportunities (⭐ Save Feature)  
+- Apply buttons for each opportunity  
+
+### ⭐ 4. **Social Good Focus**
+OpporTutor highlights opportunities for:
+- Women in STEM  
+- Low-income students  
+- First-generation learners  
+- Students with disabilities  
+
+Helping reduce inequality in access to global programs.
+
+---
+
+## 🧠 Tech Stack  
+- **Python 3.10+**  
+- **Streamlit** – UI  
+- **Sentence Transformers (MiniLM-L6-v2)** – Embedding model  
+- **Scikit-learn** – Similarity computation  
+- **Custom Scoring Logic** – Fairness-aware ranking  
+- **JSON Dataset** – 40 real & simulated opportunities  
+
+---
+
+## 📁 Project Structure
+opportutor/
+│── app.py # Streamlit frontend
+│── model.py # Embedding + ranking logic
+│── utils/
+│ └── scoring.py # Custom scoring rules
+│── data/
+│ └── opportunities.json # 40 curated opportunities
+│── requirements.txt
+│── README.md
+
+
+---
+
+## 🧩 How It Works (Under the Hood)
+
+### 1️⃣ Embedding Generation  
+We embed:
+- Opportunity descriptions  
+- Tags  
+- Student’s interests + goals  
+
+using `sentence-transformers/all-MiniLM-L6-v2`.
+
+### 2️⃣ Similarity & Scoring  
+Final score =  
+**Semantic Similarity**  
++ **Year Fit**  
++ **Stipend Fit**  
++ **Location Fit**  
++ **Diversity Bonus**  
+
+This produces **highly relevant, student-specific recommendations.**
+
+### 3️⃣ Ranking  
+Top opportunities are sorted and displayed with:
+- Score  
+- Category  
+- Deadline  
+- Apply CTA  
+- Badges (Women-only, Stipend, Low-income, etc.)
+
+---
+
+## 🛠️ Installation & Running Locally  
+
+### 1️⃣ Clone the repository  
 ```bash
-# clone the repo
-git clone https://github.com/your-username/OpporTutor-AI-Opportunity-Navigator.git
+git clone https://github.com/YOUR-USERNAME/OpporTutor-AI-Opportunity-Navigator.git
 cd OpporTutor-AI-Opportunity-Navigator
 
-# install dependencies
 pip install -r requirements.txt
 
-# run the app
 streamlit run app.py

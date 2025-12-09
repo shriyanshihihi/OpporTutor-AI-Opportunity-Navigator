@@ -25,7 +25,7 @@ def compute_opportunity_embeddings(opportunities):
 
 
 def rank_opportunities(profile, opportunities):
-    profile_text = f"{profile['interests']} {profile['goals']} {profile['branch']}"
+    profile_text = f"{profile['interests']}{profile['branch']}"
     profile_vec = embed_text(profile_text)
 
     ranked = []
